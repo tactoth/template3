@@ -38,7 +38,7 @@ object Striper {
 // commonly used states
 
 object FreeState {
-  val CODE_START_PATTERN = Pattern.compile("$(\w*)\(\\z")
+  val CODE_START_PATTERN = Pattern.compile("""\$([\w:]*)\(\z""")
 }
 
 class FreeState extends State {
@@ -49,7 +49,7 @@ class FreeState extends State {
   def handle(c: Char, striper: Striper): Unit = {
     sb += c
     val matcher = FreeState.CODE_START_PATTERN.matcher(sb)
-    if (matcher.matches()) {
+    if (matcher.find()) {
       val label = matcher.group(1)
       val sectionBegin = matcher.group()
 

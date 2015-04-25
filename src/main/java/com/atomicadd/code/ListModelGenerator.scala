@@ -1,17 +1,11 @@
 package com.atomicadd.code
 
-import com.atomica.templ.parse.Striper
-import com.atomica.templ.parse.FreeState
-import com.atomicadd.templ.Context
-import com.atomicadd.templ.Template
-import com.atomicadd.templ.ValueString
-import com.atomicadd.templ.ValueList
-import com.atomicadd.templ.ValueList
-import com.atomicadd.templ.ValueString
-import java.util.Date
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
+import java.nio.file.{Files, Paths}
+import java.util.Date
+
+import com.atomicadd.templ.parse.Striper
+import com.atomicadd.templ.{Context, ValueList, ValueString}
 
 object ListModelGenerator {
 

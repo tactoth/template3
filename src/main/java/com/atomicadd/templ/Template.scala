@@ -90,7 +90,7 @@ case class IfItem(itemName: String, internal: TemplateItem) extends TemplateItem
 
 case class ListItem(items: Seq[TemplateItem]) extends TemplateItem {
   override def build(context: Context) = {
-    items.map(item => item.build(context)).sum
+    items.map(item => item.build(context)).reduce(_ + _)
   }
 }
 
