@@ -7,21 +7,26 @@ trait ValueBase {
 
 case class ValueString(str: String) extends ValueBase {}
 
+case class ValuePair(first: ValueBase, second: ValueBase) extends ValueBase {}
+
 case class ValueList(list: Seq[ValueBase]) extends ValueBase {}
 
 class Context {
 
   // managing variables
   private val varStack = mutable.Buffer[mutable.Map[String, ValueBase]]()
+
   private def currentVars = varStack.last
 
   def push = varStack += mutable.Map[String, ValueBase]()
+
   def pop = varStack.remove(varStack.size - 1)
 
   def apply(name: String) = varStack.reverse.collectFirst {
     // loves partial function
     case m if m.contains(name) => m(name)
   }
+
   def update(name: String, value: ValueBase) = currentVars(name) = value
 
   // push default map
@@ -29,6 +34,7 @@ class Context {
 
   // plugins for users
   val registeredMethods = mutable.Map[String, ValueBase => String]()
+
   def call(method: String, base: ValueBase) = registeredMethods(method)(base)
 }
 
@@ -50,9 +56,9 @@ case class VariableItem(name: String) extends TemplateItem {
   }
 }
 
-case class CallItem(method:String, name: String) extends TemplateItem {
+case class CallItem(method: String, name: String) extends TemplateItem {
   override def build(context: Context) = context(name) match {
-    case Some(v) =>  context.call(method, v)
+    case Some(v) => context.call(method, v)
     case _ => "E_NOT_FOUND(" + name + "?)"
   }
 }
@@ -66,6 +72,15 @@ case class ForItem(itemName: String, listName: String, internal: TemplateItem) e
         for (en <- list) {
           context.push
           context(itemName) = en
+
+          // special handling for pairs TODO
+          en match {
+            case ValuePair(first, second) =>
+              context(itemName + ".first") = first
+              context(itemName + ".second") = second
+            case _ =>
+          }
+
           sb ++= internal.build(context)
           context.pop
         }

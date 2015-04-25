@@ -27,6 +27,17 @@ class StriperTest {
     Assert.assertEquals("hello haha;hello Guagua;", result)
   }
 
+  @Test def forWithPairs(): Unit = {
+    val templateItem = Striper.strip( """$for(name in list)hello $(name.first) $(name.second);$end()""")
+    val context = new Context()
+    context("list") = ValueList(List(ValuePair(ValueString("Wei"), ValueString("Liu")),
+      ValuePair(ValueString("Tubage"), ValueString("Huluobo"))))
+
+    val result = templateItem.build(context)
+    Assert.assertEquals("hello Wei Liu;hello Tubage Huluobo;", result)
+  }
+
+
   @Test def ifState(): Unit = {
     val templateItem = Striper.strip( """$if(condition)hello$end()world""")
 
