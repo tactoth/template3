@@ -4,7 +4,7 @@ import java.nio.file.{Files, Paths}
 import java.util
 
 import com.atomicadd.templ.parse.Striper
-import com.atomicadd.templ.{Context, ValueList, ValuePair, ValueString}
+import com.atomicadd.templ._
 import com.beust.jcommander.{DynamicParameter, JCommander, Parameter}
 
 import scala.collection.JavaConversions._
@@ -28,7 +28,7 @@ object Main {
     try {
       commander.parse(args: _*)
     } catch {
-      case e => println(e.getMessage)
+      case e: Throwable => println(e.getMessage)
         val stringBuilder = new java.lang.StringBuilder()
         commander.usage(stringBuilder)
         println(stringBuilder)
@@ -47,7 +47,7 @@ object Main {
 
         Files.write(Paths.get(buildOptions.out), str.getBytes("utf-8"))
       case CMD_BATCH =>
-        // TODO, implement this
+      // TODO, implement this
       case _ =>
     }
   }
@@ -71,19 +71,18 @@ object Main {
       ValueList(values)
     }
 
-    val values = for (en <- options.map) yield en match {
-      case (key, value) => {
-        if (key.startsWith("L")) {
-          (key.substring(1), makeList(value))
-        } else if (key.startsWith("D")) {
-          (key.substring(1), makeDictionary(value))
-        } else {
-          (key, ValueString(value))
-        }
+    def transform(map: util.HashMap[String, String], f: String => ValueBase) = {
+      for (en <- map) yield en match {
+        case (key, value) => (key, f(value))
       }
     }
 
-    for (entry <- values) {
+    val opts = transform(options.values, ValueString) ::
+      transform(options.lists, makeList) ::
+      transform(options.maps, makeDictionary) :: Nil
+
+
+    for (values <- opts; entry <- values) {
       context(entry._1) = entry._2
     }
 
@@ -92,7 +91,13 @@ object Main {
 
   class BaseOptions {
     @DynamicParameter(names = Array("-D"), description = "Your template input parameters")
-    val map = new util.HashMap[String, String]()
+    val values = new util.HashMap[String, String]()
+
+    @DynamicParameter(names = Array("-L"), description = "List input parameters, format: item1,item2,item3")
+    val lists = new util.HashMap[String, String]()
+
+    @DynamicParameter(names = Array("-M"), description = "Map input parameters, format: key1:value1,key2:value2")
+    val maps = new util.HashMap[String, String]()
   }
 
   class BatchOptions extends BaseOptions {
