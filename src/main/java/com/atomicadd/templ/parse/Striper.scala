@@ -66,7 +66,8 @@ class FreeState extends State {
 
 object CodeState {
   val CALL_PATTERN = Pattern.compile("""call:(\w+)""")
-  val FOR_PATTERN = Pattern.compile( """(\w+) in (\w+)""")
+  val FOR_PATTERN = Pattern.compile( """(\w+)\s+in\s+(\w+)""")
+  val IF_PATTERN = Pattern.compile("""(\w+)\s*==\s*\"(\w+)\"""")
 }
 
 class CodeState(label: String) extends State {
@@ -85,7 +86,14 @@ class CodeState(label: String) extends State {
         case "" =>
           striper.topAsFreeState.templItems += VariableItem(code)
         case "if" =>
-          striper.states push new WrappedState(item => IfItem(code, item))
+          val m = CodeState.IF_PATTERN.matcher(code)
+          if (m.matches()) {
+            val name = m.group(1)
+            val expected = m.group(2)
+            striper.states push new WrappedState(item => IfItem(name, expected, item))
+          } else {
+            println("Invalid if body: " + code + ", should be name==\"value\"")
+          }
         case "for" =>
           val m = CodeState.FOR_PATTERN.matcher(code)
           if (m.matches()) {
@@ -93,7 +101,7 @@ class CodeState(label: String) extends State {
             val listName = m.group(2)
             striper.states push new WrappedState(item => ForItem(itemName, listName, item))
           } else {
-            println("Invalid for body: " + code)
+            println("Invalid for body: " + code + ", should be item in list")
           }
         case "end" =>
           val lastBuild = striper.states.pop().buildItem

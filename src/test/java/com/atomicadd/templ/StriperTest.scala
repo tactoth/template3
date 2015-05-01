@@ -39,7 +39,7 @@ class StriperTest {
 
 
   @Test def ifState(): Unit = {
-    val templateItem = Striper.strip( """$if(condition)hello$end()world""")
+    val templateItem = Striper.strip( """$if(condition=="true")hello$end()world""")
 
     {
       val context = new Context()

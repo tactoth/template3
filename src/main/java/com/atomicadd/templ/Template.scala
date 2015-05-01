@@ -90,11 +90,11 @@ case class ForItem(itemName: String, listName: String, internal: TemplateItem) e
   }
 }
 
-case class IfItem(itemName: String, internal: TemplateItem) extends TemplateItem {
+case class IfItem(name: String, value:String, internal: TemplateItem) extends TemplateItem {
   override def build(context: Context) = {
-    context(itemName).orNull match {
+    context(name).orNull match {
       case ValueString(s) =>
-        if (Set("true", "1", "yes").contains(s))
+        if (value.equals(s))
           internal.build(context)
         else
           ""
