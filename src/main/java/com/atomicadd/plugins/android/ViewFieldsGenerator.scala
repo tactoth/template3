@@ -1,9 +1,9 @@
-package com.atomicadd.code
+package com.atomicadd.plugins.android
 
-import scala.xml.XML
 import java.io.File
-import scala.xml.Elem
+
 import scala.collection.mutable
+import scala.xml.{Elem, XML}
 
 object ViewFieldsGenerator {
   def main(args: Array[String]): Unit = {
