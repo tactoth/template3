@@ -1,5 +1,10 @@
 package com.atomicadd.templ
 
+import java.io.File
+
+import com.atomicadd.templ.parse.Striper
+import com.atomicadd.utils.Utils
+
 import scala.collection.mutable
 
 trait ValueBase {
@@ -90,7 +95,7 @@ case class ForItem(itemName: String, listName: String, internal: TemplateItem) e
   }
 }
 
-case class IfItem(name: String, value:String, internal: TemplateItem) extends TemplateItem {
+case class IfItem(name: String, value: String, internal: TemplateItem) extends TemplateItem {
   override def build(context: Context) = {
     context(name).orNull match {
       case ValueString(s) =>
@@ -109,7 +114,17 @@ case class ListItem(items: Seq[TemplateItem]) extends TemplateItem {
   }
 }
 
+class Template(root: TemplateItem) {
+  def getVariables = Template.getVariables(root)
+}
+
 object Template {
+
+  // constructors
+  def apply(templateStr: String) = new Template(Striper.strip(templateStr))
+
+  def apply(file:File) = apply(Utils.readAll(file))
+
   def getVariables(item: TemplateItem, exclude: Set[String] = Set.empty): Set[String] = {
     def filter(name: String): Set[String] = if (exclude.contains(name)) Set.empty else Set(name)
 

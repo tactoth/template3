@@ -1,10 +1,12 @@
 package com.atomicadd.codegen
 
+import java.io.File
 import java.nio.file.{Files, Paths}
 import java.util
 
 import com.atomicadd.templ.parse.Striper
 import com.atomicadd.templ._
+import com.atomicadd.utils.Utils
 import com.beust.jcommander.{DynamicParameter, JCommander, Parameter}
 
 import scala.collection.JavaConversions._
@@ -39,8 +41,7 @@ object Main {
         // parse options
         val context = parseContext(buildOptions)
 
-        val source = scala.io.Source.fromFile(buildOptions.template)
-        val lines = try source.getLines().mkString("\n") finally source.close()
+        val lines = Utils.readAll(new File(buildOptions.template))
 
         val template = Striper.strip(lines)
         val str = template.build(context)
@@ -56,7 +57,7 @@ object Main {
     var context: Context = new Context
 
     def makeList(s: String) = {
-      val valueList = s.split(",").map(ValueString(_)).toList
+      val valueList = s.split(",").map(ValueString).toList
       ValueList(valueList)
     }
 
