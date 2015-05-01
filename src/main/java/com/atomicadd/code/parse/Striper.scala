@@ -2,8 +2,6 @@ package com.atomicadd.code.parse
 
 import java.util.regex.Pattern
 
-import com.atomicadd.templ._
-
 import scala.collection.mutable
 
 // the framework

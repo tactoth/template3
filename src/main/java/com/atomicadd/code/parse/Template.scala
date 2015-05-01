@@ -1,46 +1,7 @@
 package com.atomicadd.code.parse
 
-import java.io.File
+import com.atomicadd.code.{Context, ValueList, ValuePair, ValueString}
 
-import com.atomicadd.code.utils.Utils
-
-import scala.collection.mutable
-
-trait ValueBase {
-}
-
-case class ValueString(str: String) extends ValueBase {}
-
-case class ValuePair(first: ValueBase, second: ValueBase) extends ValueBase {}
-
-case class ValueList(list: Seq[ValueBase]) extends ValueBase {}
-
-class Context {
-
-  // managing variables
-  private val varStack = mutable.Buffer[mutable.Map[String, ValueBase]]()
-
-  private def currentVars = varStack.last
-
-  def push = varStack += mutable.Map[String, ValueBase]()
-
-  def pop = varStack.remove(varStack.size - 1)
-
-  def apply(name: String) = varStack.reverse.collectFirst {
-    // loves partial function
-    case m if m.contains(name) => m(name)
-  }
-
-  def update(name: String, value: ValueBase) = currentVars(name) = value
-
-  // push default map
-  push
-
-  // plugins for users
-  val registeredMethods = mutable.Map[String, ValueBase => String]()
-
-  def call(method: String, base: ValueBase) = registeredMethods(method)(base)
-}
 
 abstract class TemplateItem() {
   def build(context: Context): String
@@ -113,25 +74,5 @@ case class ListItem(items: Seq[TemplateItem]) extends TemplateItem {
   }
 }
 
-class Template(root: TemplateItem) {
-  def getVariables = Template.getVariables(root)
-}
 
-object Template {
 
-  // constructors
-  def apply(templateStr: String) = new Template(Striper.strip(templateStr))
-
-  def apply(file:File) = apply(Utils.readAll(file))
-
-  def getVariables(item: TemplateItem, exclude: Set[String] = Set.empty): Set[String] = {
-    def filter(name: String): Set[String] = if (exclude.contains(name)) Set.empty else Set(name)
-
-    item match {
-      case VariableItem(name) => filter(name)
-      case ForItem(en, list, internal) => getVariables(internal, exclude + en) ++ filter(list)
-      case ListItem(items) => items.map(getVariables(_, exclude)).reduce(_ ++ _)
-      case _ => Set.empty
-    }
-  }
-}

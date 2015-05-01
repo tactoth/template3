@@ -2,12 +2,13 @@ package com.atomicadd.code.plugins
 
 import java.io.File
 
+import com.atomicadd.code.{ValueList, ValueString, ValuePair}
+
 import scala.collection.mutable
 import scala.xml.{Elem, XML}
 
 object ViewFieldsGenerator {
-  def main(args: Array[String]): Unit = {
-    val file = new File("/Users/liuwei/Code/toptal/JoggingTrackerAndroid/app/src/main/res/layout/activity_run.xml")
+  def views(file: File) = {
     val x = XML.loadFile(file)
 
     val views = mutable.Buffer[(String, String)]()
@@ -24,7 +25,7 @@ object ViewFieldsGenerator {
       for (n <- ele.child) {
         n match {
           case ele: Elem => collect(ele)
-          case _         =>
+          case _ =>
         }
       }
     }
@@ -32,19 +33,14 @@ object ViewFieldsGenerator {
     collect(x)
     println(views)
 
+    // sort by name
     val sorted = views.sortBy(_._2)
+    sorted
+  }
 
-    for (p <- sorted) {
-      p match {
-        case (t, v) => println(String.format("private %s %s;", t, v))
-      }
-    }
-
-    for (p <- sorted) {
-      p match {
-        case (t, v) => println(String.format("%s = (%s) findViewById(R.id.%s);", v, t, v))
-      }
-    }
-
+  def viewsAsValue(file: File) = {
+    ValueList(views(file).map {
+      case (label, id) => ValuePair(ValueString(label), ValueString(id))
+    }.toList)
   }
 }

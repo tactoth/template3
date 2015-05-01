@@ -4,8 +4,8 @@ import java.io.File
 import java.nio.file.{Files, Paths}
 import java.util.Date
 
-import com.atomicadd.templ.parse.Striper
-import com.atomicadd.templ.{Context, ValueList, ValueString}
+import com.atomicadd.code.parse.{ValueList, ValueString, Striper}
+import com.atomicadd.code.templ.Context
 
 object ListModelGenerator {
 

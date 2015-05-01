@@ -4,9 +4,8 @@ import java.io.File
 import java.nio.file.{Files, Paths}
 import java.util
 
-import com.atomicadd.templ._
-import com.atomicadd.templ.parse.Striper
-import com.atomicadd.utils.Utils
+import com.atomicadd.code.parse._
+import com.atomicadd.code.utils.Utils
 import com.beust.jcommander.{DynamicParameter, JCommander, Parameter}
 
 import scala.collection.JavaConversions._

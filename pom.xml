@@ -19,7 +19,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.atomicadd.codegen.Main</mainClass>
+                            <mainClass>com.atomicadd.code.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
