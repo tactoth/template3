@@ -1,4 +1,4 @@
-package com.atomicadd.templ.parse
+package com.atomicadd.code.parse
 
 import java.util.regex.Pattern
 

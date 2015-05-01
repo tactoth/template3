@@ -1,9 +1,8 @@
-package com.atomicadd.templ
+package com.atomicadd.code.parse
 
 import java.io.File
 
-import com.atomicadd.templ.parse.Striper
-import com.atomicadd.utils.Utils
+import com.atomicadd.code.utils.Utils
 
 import scala.collection.mutable
 

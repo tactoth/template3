@@ -1,6 +1,6 @@
-package com.atomicadd.templ
+package com.atomicadd.code.templ
 
-import com.atomicadd.templ.parse.Striper
+import com.atomicadd.code.parse.Striper
 import org.junit.{Assert, Test}
 
 /**

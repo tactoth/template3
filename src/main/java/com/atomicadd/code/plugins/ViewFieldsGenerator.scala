@@ -1,4 +1,4 @@
-package com.atomicadd.plugins.android
+package com.atomicadd.code.plugins
 
 import java.io.File
 
