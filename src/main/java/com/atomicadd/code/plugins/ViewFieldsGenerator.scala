@@ -31,7 +31,6 @@ object ViewFieldsGenerator {
     }
 
     collect(x)
-    println(views)
 
     // sort by name
     val sorted = views.sortBy(_._2)

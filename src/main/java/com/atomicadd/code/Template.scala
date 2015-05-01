@@ -13,7 +13,7 @@ object Template {
   // constructors
   def apply(templateStr: String) = new Template(Striper.strip(templateStr))
 
-  def apply(file:File) = apply(Utils.readAll(file))
+  def apply(file:File):Template = apply(Utils.readAll(file))
 
   def getVariables(item: TemplateItem, exclude: Set[String] = Set.empty): Set[String] = {
     def filter(name: String): Set[String] = if (exclude.contains(name)) Set.empty else Set(name)
