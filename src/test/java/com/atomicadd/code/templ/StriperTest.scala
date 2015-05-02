@@ -60,10 +60,10 @@ class StriperTest {
   }
 
   @Test def testCall(): Unit = {
-    val templateItem = Striper.strip( """$(name) and $call:reverse(name)""")
+    val templateItem = Striper.strip( """$(name) and $:reverse(name)""")
 
     val context = new Context()
-    context.registeredMethods("reverse") = (vs: ValueBase) => vs.asInstanceOf[ValueString].str.reverse
+    context.registeredMethods("reverse") = (vs: ValueBase) =>  ValueString(vs.asInstanceOf[ValueString].str.reverse)
 
     context("name") = ValueString("Wei")
 

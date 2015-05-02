@@ -55,49 +55,18 @@ object Main {
   def parseContext(options: BaseOptions) = {
     var context: Context = new Context
 
-    def makeList(s: String) = {
-      val valueList = s.split(",").map(ValueString).toList
-      ValueList(valueList)
-    }
-
-    def makeDictionary(s: String) = {
-      val values = s.split(",").map(
-        item =>
-          item.split(":") match {
-            case Array(key, value) => ValuePair(ValueString(key), ValueString(value))
-            case _ => throw new RuntimeException("Invalid input for pair entry: " + item)
-          }
-      ).toList
-      ValueList(values)
-    }
-
-    def transform(map: util.HashMap[String, String], f: String => ValueBase) = {
-      for (en <- map) yield en match {
-        case (key, value) => (key, f(value))
+    for (en <- options.values) {
+      en match {
+        case (key, value) => context(key) = value
       }
-    }
-
-    val opts = transform(options.values, ValueString) ::
-      transform(options.lists, makeList) ::
-      transform(options.maps, makeDictionary) :: Nil
-
-
-    for (values <- opts; entry <- values) {
-      context(entry._1) = entry._2
     }
 
     context
   }
 
   class BaseOptions {
-    @DynamicParameter(names = Array("-D"), description = "Your template input parameters")
+    @DynamicParameter(names = Array("-D"), description = "Your template input parameters, can be plain string, or $:method(variableName), or $:method<plain string>")
     val values = new util.HashMap[String, String]()
-
-    @DynamicParameter(names = Array("-L"), description = "List input parameters, format: item1,item2,item3")
-    val lists = new util.HashMap[String, String]()
-
-    @DynamicParameter(names = Array("-M"), description = "Map input parameters, format: key1:value1,key2:value2")
-    val maps = new util.HashMap[String, String]()
   }
 
   class BatchOptions extends BaseOptions {

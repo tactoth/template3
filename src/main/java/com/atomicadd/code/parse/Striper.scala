@@ -63,7 +63,7 @@ class FreeState extends State {
 }
 
 object CodeState {
-  val CALL_PATTERN = Pattern.compile("""call:(\w+)""")
+  val CALL_PATTERN = Pattern.compile(""":(\w+)""")
   val FOR_PATTERN = Pattern.compile( """(\w+)\s+in\s+(\w+)""")
   val IF_PATTERN = Pattern.compile("""(\w+)\s*==\s*\"(\w+)\"""")
 }

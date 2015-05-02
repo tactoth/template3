@@ -23,7 +23,10 @@ case class VariableItem(name: String) extends TemplateItem {
 
 case class CallItem(method: String, name: String) extends TemplateItem {
   override def build(context: Context) = context(name) match {
-    case Some(v) => context.call(method, v)
+    case Some(v) => context.call(method, v) match {
+      case ValueString(s) => s
+      case _ => "E_BAD_TYPE"
+    }
     case _ => "E_NOT_FOUND(" + name + "?)"
   }
 }
