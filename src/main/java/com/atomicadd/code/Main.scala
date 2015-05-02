@@ -7,7 +7,7 @@ import java.util
 import com.atomicadd.code.parse._
 import com.atomicadd.code.plugins.ViewFieldsGenerator
 import com.atomicadd.code.utils.Utils
-import com.beust.jcommander.{DynamicParameter, JCommander, Parameter}
+import com.beust.jcommander.{Parameters, DynamicParameter, JCommander, Parameter}
 
 import scala.collection.JavaConversions._
 
@@ -21,15 +21,19 @@ object Main {
 
   val CMD_BATCH: String = "batch"
 
+  val CMD_PRINT_PARAMS: String = "printParams"
+
   def main(args: Array[String]) {
 
     val commander = new JCommander()
     val batchOptions = new BatchOptions()
     val buildOptions = new BuildOptions()
+    val printParamsOptions = new PrintParamsOptions
 
     commander.addCommand(CMD_BATCH, batchOptions)
     commander.addCommand(CMD_GEN, buildOptions)
-    commander.addCommand(CMD_METHODS, new Object())
+    commander.addCommand(CMD_METHODS, new Object)
+    commander.addCommand(CMD_PRINT_PARAMS, printParamsOptions)
 
     try {
       commander.parse(args: _*)
@@ -60,6 +64,14 @@ object Main {
       case CMD_METHODS =>
         // print all method names
         createContext.registeredMethods.keys.foreach(println(_))
+      case CMD_PRINT_PARAMS =>
+        val varNames = for (file <- printParamsOptions.templateFiles) yield {
+          val content = Utils.readAll(new File(file))
+          val template = Template(content)
+          template.getVariables
+        }
+
+        varNames.reduce(_ ++ _).foreach(println(_))
       case CMD_BATCH =>
       // TODO, implement this
       case _ =>
@@ -85,6 +97,12 @@ object Main {
         ViewFieldsGenerator.viewsAsValue(new File(vs.asInstanceOf[ValueString].str.replace("~", System.getProperty("user.home"))))
     }
     context
+  }
+
+  @Parameters(commandDescription = "Print parameter list of the template")
+  class PrintParamsOptions {
+    @Parameter
+    val templateFiles = new util.ArrayList[String]()
   }
 
   class BaseOptions {

@@ -13,14 +13,15 @@ object Template {
   // constructors
   def apply(templateStr: String) = new Template(Striper.strip(templateStr))
 
-  def apply(file:File):Template = apply(Utils.readAll(file))
+  def apply(file: File): Template = apply(Utils.readAll(file))
 
   def getVariables(item: TemplateItem, exclude: Set[String] = Set.empty): Set[String] = {
     def filter(name: String): Set[String] = if (exclude.contains(name)) Set.empty else Set(name)
 
     item match {
       case VariableItem(name) => filter(name)
-      case ForItem(en, list, internal) => getVariables(internal, exclude + en) ++ filter(list)
+      case ForItem(en, list, internal) => getVariables(internal,
+        exclude + en + (en + ".first") + (en + ".second")) ++ filter(list)
       case ListItem(items) => items.map(getVariables(_, exclude)).reduce(_ ++ _)
       case _ => Set.empty
     }
