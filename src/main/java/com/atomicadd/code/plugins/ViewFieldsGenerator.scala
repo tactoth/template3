@@ -15,7 +15,6 @@ object ViewFieldsGenerator {
     def collect(ele: Elem) {
       for (idNodeSeq <- ele.attribute("http://schemas.android.com/apk/res/android", "id"); idValue <- idNodeSeq) {
         val text = idValue.text
-        println(text)
 
         val id = text.substring(text.indexOf('/') + 1)
         val node = (ele.label, id)

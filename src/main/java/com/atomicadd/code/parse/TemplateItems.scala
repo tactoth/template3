@@ -34,7 +34,8 @@ case class CallItem(method: String, name: String) extends TemplateItem {
 
 case class ForItem(itemName: String, listName: String, internal: TemplateItem) extends TemplateItem {
   override def build(context: Context) = {
-    context(listName).orNull match {
+    val valueOpt = context(listName)
+    valueOpt.orNull match {
       case ValueList(list) =>
         val sb = new StringBuilder()
         for (en <- list) {
