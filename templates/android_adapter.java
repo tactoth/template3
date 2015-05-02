@@ -7,7 +7,7 @@ public class $(itemClass)ListAdapter extends ArrayAdapter<$(itemClass)> {
 
     private static class ViewHodler {
         $for(field in fields)
-        $field.first $(field.second);$end()
+        $(field.first) $(field.second);$end()
     }
 
     public $(itemClass)ListAdapter(Context context, List<$(itemClass)> objects) {
@@ -23,7 +23,7 @@ public class $(itemClass)ListAdapter extends ArrayAdapter<$(itemClass)> {
             ViewHodler vh = new ViewHodler();
             
             $for(field in fields)
-            vh.$(field.second) = ($(field.first)) v.findViewById(R.id.$(field.second));$(end)
+            vh.$(field.second) = ($(field.first)) v.findViewById(R.id.$(field.second));$end()
 
             v.setTag(vh);
         }
@@ -33,9 +33,9 @@ public class $(itemClass)ListAdapter extends ArrayAdapter<$(itemClass)> {
         $(itemClass) item = getItem(position);
 
         $for(field in fields)
-        vh.$(field.second).setText(item.$(field.second));$(end)
+        vh.$(field.second).setText(item.$(field.second));$end()
 
         return v;
     }
-}"""
+}
 

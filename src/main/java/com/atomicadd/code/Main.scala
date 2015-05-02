@@ -101,7 +101,7 @@ object Main {
 
   @Parameters(commandDescription = "Print parameter list of the template")
   class PrintParamsOptions {
-    @Parameter
+    @Parameter(description = "Template files")
     val templateFiles = new util.ArrayList[String]()
   }
 
@@ -117,6 +117,7 @@ object Main {
     val listFile = "list.xml"
   }
 
+  @Parameters(commandDescription = "Generate content based on template and template input")
   class BuildOptions extends BaseOptions {
     @Parameter(names = Array("-template", "-T"), description = "Template file", required = true)
     var template: String = ""
