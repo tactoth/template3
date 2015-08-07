@@ -32,7 +32,9 @@ object ViewFieldsGenerator {
     collect(x)
 
     // sort by name
-    val sorted = views.sortBy(_._2)
+    val sorted = views.sortBy {
+      case (klass, name) => name
+    }
     sorted
   }
 

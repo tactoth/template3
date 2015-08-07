@@ -3,8 +3,6 @@ name := """template3"""
 
 version := "1.0"
 
-mainClass in (Compile, run) := Some("Main")
-
 lazy val root = project in file(".")
 
 scalaVersion := "2.11.6"

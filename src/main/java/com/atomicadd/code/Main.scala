@@ -1,6 +1,6 @@
 package com.atomicadd.code
 
-import java.io.File
+import java.io.{FileFilter, File}
 import java.nio.file.{Files, Paths}
 import java.util
 
@@ -10,111 +10,131 @@ import com.atomicadd.code.utils.Utils
 import com.beust.jcommander.{Parameters, DynamicParameter, JCommander, Parameter}
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 
 /**
+ * Main
  * Created by liuwei on 4/25/15.
  */
 object Main {
-  val CMD_GEN: String = "gen"
 
-  val CMD_METHODS: String = "methods"
+  /**
+   * Global options
+   */
+  object options {
+    @Parameter(names = Array("-templates", "-TD"), description = "Template file directory", required = false)
+    var templatesDir: File = new File("templates")
 
-  val CMD_BATCH: String = "batch"
+    def getTemplates(query: String) = {
+      templatesDir.listFiles(
+        new FileFilter {
 
-  val CMD_PRINT_PARAMS: String = "printParams"
+          def fuzzyMatch(query: String, s: String): Boolean = {
+            if (query.isEmpty)
+              return true
+
+            (query.length <= s.length) && {
+              if (query.head == s.head) fuzzyMatch(query.tail, s.tail)
+              else fuzzyMatch(query, s.tail)
+            }
+          }
+
+          override def accept(file: File): Boolean = {
+            !file.isDirectory && fuzzyMatch(query.toLowerCase, file.getName.toLowerCase)
+          }
+        }
+      )
+    }
+
+    def getTemplateFile(query: String) = {
+      val files = getTemplates(query)
+      if (files == null || files.isEmpty) {
+        println(s"no template found for $query")
+        println(s"templates dir = $templatesDir")
+        throw new RuntimeException
+      } else if (files.length > 1) {
+        println(s"${files.length} files found:")
+        files.foreach(println(_))
+        throw new RuntimeException
+      } else {
+        println(s"template match $query => ${files.head}")
+        files.head
+      }
+    }
+  }
 
   def main(args: Array[String]) {
 
     val commander = new JCommander()
-    val batchOptions = new BatchOptions()
-    val buildOptions = new BuildOptions()
-    val printParamsOptions = new PrintParamsOptions
+    commander.addObject(options)
 
-    commander.addCommand(CMD_BATCH, batchOptions)
-    commander.addCommand(CMD_GEN, buildOptions)
-    commander.addCommand(CMD_METHODS, new Object)
-    commander.addCommand(CMD_PRINT_PARAMS, printParamsOptions)
+    val actions = mutable.Map[String, Runnable]()
 
-    try {
-      commander.parse(args: _*)
-    } catch {
-      case e: Throwable => println(e.getMessage)
-        val stringBuilder = new java.lang.StringBuilder()
-        commander.usage(stringBuilder)
-        println(stringBuilder)
-        return
+    def addCommand(name: String, action: Runnable): Unit = {
+      commander.addCommand(name, action)
+      actions(name) = action
     }
 
-    commander.getParsedCommand match {
-      case CMD_GEN =>
-        // parse options
-        val context = parseContext(buildOptions)
+    // add commands
+    addCommand("gen", new BuildOptions)
+    addCommand("params", new PrintParamsOptions)
 
-        val lines = Utils.readAll(new File(buildOptions.template))
 
-        val template = Striper.strip(lines)
-        val str = template.build(context)
-
-        if ("std".equals(buildOptions.out)) {
-          println(str)
-        } else {
-          Files.write(Paths.get(buildOptions.out), str.getBytes("utf-8"))
-        }
-
-      case CMD_METHODS =>
-        // print all method names
-        createContext.registeredMethods.keys.foreach(println(_))
-      case CMD_PRINT_PARAMS =>
-        val varNames = for (file <- printParamsOptions.templateFiles) yield {
-          val content = Utils.readAll(new File(file))
-          val template = Template(content)
-          template.getVariables
-        }
-
-        varNames.reduce(_ ++ _).foreach(println(_))
-      case CMD_BATCH =>
-      // TODO, implement this
-      case _ =>
+    // parse
+    commander.parse(args: _*)
+    val parsedCommand = commander.getParsedCommand
+    if (parsedCommand == null) {
+      commander.usage()
+    } else {
+      actions(parsedCommand).run()
     }
   }
 
-  def parseContext(options: BaseOptions) = {
-    var context: Context = createContext
-
-    for (en <- options.values) {
-      en match {
-        case (key, value) => context(key) = value
-      }
-    }
-
-    context
-  }
-
-  def createContext = {
-    val context = new Context
-    context.registeredMethods("android_views") = {
-      vs =>
-        ViewFieldsGenerator.viewsAsValue(new File(vs.asInstanceOf[ValueString].str.replace("~", System.getProperty("user.home"))))
-    }
-    context
-  }
 
   @Parameters(commandDescription = "Print parameter list of the template")
-  class PrintParamsOptions {
+  class PrintParamsOptions extends Runnable {
     @Parameter(description = "Template files")
-    val templateFiles = new util.ArrayList[String]()
+    val templates = new util.ArrayList[String]()
+
+    override def run(): Unit = {
+      val varNames = for (templateQuery <- this.templates) yield {
+        val content = Utils.readAll(options.getTemplateFile(templateQuery))
+        val template = Template(content)
+        template.getVariables
+      }
+
+      varNames.reduce(_ ++ _).foreach(println(_))
+    }
   }
 
-  class BaseOptions {
+  abstract class BaseOptions extends Runnable {
     @DynamicParameter(
       names = Array("-D"),
       description = "Your template input parameters, can be plain string, or $:method(variableName), or $:method<plain string>,"
         + " to see a list of methods use \"methods\"")
     val values = new util.HashMap[String, String]()
-  }
 
-  class BatchOptions extends BaseOptions {
-    val listFile = "list.xml"
+    def parseContext() = {
+      val context: Context = createContext
+
+      for (en <- this.values) {
+        en match {
+          case (key, value) => context(key) = value
+        }
+      }
+
+      context
+    }
+
+    def createContext = {
+      val context = new Context
+      context.registeredMethods("android_views") = {
+        vs =>
+          ViewFieldsGenerator.viewsAsValue(new File(vs.asInstanceOf[ValueString].str.replace("~", System.getProperty("user.home"))))
+      }
+      context
+    }
+
   }
 
   @Parameters(commandDescription = "Generate content based on template and template input")
@@ -124,6 +144,22 @@ object Main {
 
     @Parameter(names = Array("-out", "-O"), description = "Out put file")
     var out: String = "std"
+
+    override def run(): Unit = {
+      val context = parseContext()
+
+      val lines = Utils.readAll(options.getTemplateFile(this.template))
+
+      val template = Striper.strip(lines)
+      val str = template.build(context)
+
+      if ("std".equals(out)) {
+        println(str)
+      } else {
+        Files.write(Paths.get(out), str.getBytes("utf-8"))
+      }
+
+    }
   }
 
 }
