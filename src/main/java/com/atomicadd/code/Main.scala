@@ -78,6 +78,8 @@ object Main {
     // add commands
     addCommand("gen", new BuildOptions)
     addCommand("params", new PrintParamsOptions)
+    addCommand("templates", new PrintTemplates)
+    addCommand("methods", new PrintMethods)
 
 
     // parse
@@ -107,10 +109,25 @@ object Main {
     }
   }
 
+  @Parameters(commandDescription = "Print templates")
+  class PrintTemplates extends Runnable {
+    override def run(): Unit = {
+      options.templatesDir.listFiles().foreach(println(_))
+    }
+  }
+
+  @Parameters(commandDescription = "Print methods")
+  class PrintMethods extends BaseOptions {
+    override def run(): Unit = {
+      createContext.registeredMethods.keys.foreach(println(_))
+    }
+  }
+
   abstract class BaseOptions extends Runnable {
     @DynamicParameter(
       names = Array("-D"),
       description = "Your template input parameters, can be plain string, or $:method(variableName), or $:method<plain string>,"
+        + " list syntax:item,item,item; map syntax: a:1,b:2,c:3"
         + " to see a list of methods use \"methods\"")
     val values = new util.HashMap[String, String]()
 
