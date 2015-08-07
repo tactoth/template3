@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+if [ $# -ne 1 ]; then
+	 echo 'Usage: android_views layout_filename'
+	 exit 1
+fi
+
+template3 gen -Dlayout=$1 -Dfields="$:android_views(layout)" -T aaf
+
+
